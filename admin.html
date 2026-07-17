@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم بالأسعار - البقالة</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-red-600 flex items-center gap-2">
+                ⚙️ نظام إدارة الأسعار (200 منتج)
+            </h1>
+            <a href="index.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm transition">
+                العودة للمتجر 🛒
+            </a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-bold">تعديل أسعار المنتجات بشكل مباشر</h2>
+                    <p class="text-xs text-gray-400 mt-1">قم بتغيير السعر واضغط "حفظ السعر" ليتم تحديثه فوراً في صفحة الزبون الرئيسية.</p>
+                </div>
+                <div class="text-xs bg-yellow-50 text-yellow-700 p-2 rounded-lg border border-yellow-100">
+                    💡 الصفحتان مرتبطتان عبر التخزين المحلي للمتصفح.
+                </div>
+            </div>
+
+            <!-- جدول التحكم بالمنتجات -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-100 text-sm text-gray-500">
+                            <th class="p-3">رقم المنتج</th>
+                            <th class="p-3">اسم المنتج</th>
+                            <th class="p-3">القسم</th>
+                            <th class="p-3 w-32">السعر الحالي (ر.س)</th>
+                            <th class="p-3 text-center">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body" class="text-sm divide-y divide-gray-50">
+                        <!-- الـ 200 منتج ستظهر هنا -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const categories = ["ألبان وأجبان", "معلبات", "مشروبات", "مخبوزات", "منظفات"];
+        const sampleNames = {
+            "ألبان وأجبان": ["حليب طازج", "جبنة فيتا", "لبنة تركية", "زبادي كامل الدسم", "قشطة طازجة", "زبدة غير مملحة"],
+            "معلبات": ["تونا قطعة واحدة", "فول مدمس", "فاصوليا حمراء", "حمص حب", "ذرة حلوة", "صلصة طماطم"],
+            "مشروبات": ["عصير برتقال", "مياه معدنية", "مشروب غازي", "شاي أحمر", "قهوة سريعة التحضير", "آيس تي"],
+            "مخبوزات": ["خبز توست", "صامولي", "كرواسون سادة", "بسكويت شاي", "كيك شوكولاتة", "شابورة"],
+            "منظفات": ["صابون صحون", "مناديل ورق", "شامبو عبوة", "مطهر أرضيات", "سائل غسيل الأيدي"]
+        };
+
+        // جلب الأسعار المخزنة سابقاً أو إنشائها
+        let customPrices = JSON.parse(localStorage.getItem('grocery_prices')) || {};
+
+        function loadAdminPanel() {
+            const tbody = document.getElementById('admin-table-body');
+            tbody.innerHTML = '';
+
+            let idCounter = 1;
+            for (let i = 0; i < 200; i++) {
+                let cat = categories[i % categories.length];
+                let namesList = sampleNames[cat];
+                let baseName = namesList[i % namesList.length];
+                let itemId = idCounter++;
+                
+                let defaultPrice = ((i % 15) + 3.5).toFixed(2);
+                let currentPrice = customPrices[itemId] ? customPrices[itemId] : defaultPrice;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/50">
+                        <td class="p-3 font-mono text-gray-400">#${itemId}</td>
+                        <td class="p-3 font-medium">${baseName} رقم ${itemId}</td>
+                        <td class="p-3"><span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">${cat}</span></td>
+                        <td class="p-3">
+                            <input type="number" id="price-input-${itemId}" value="${currentPrice}" step="0.01" min="0" 
+                                class="w-full border border-gray-200 rounded-lg p-1 text-center font-bold text-green-600 focus:outline-none focus:ring-1 focus:ring-green-500">
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="savePrice(${itemId})" class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg transition cursor-pointer">
+                                حفظ السعر ✅
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // حفظ السعر الجديد في النظام
+        function savePrice(id) {
+            const inputVal = document.getElementById(`price-input-${id}`).value;
+            if(!inputVal || inputVal < 0) {
+                alert("الرجاء إدخال سعر صحيح!");
+                return;
+            }
+
+            customPrices[id] = parseFloat(inputVal).toFixed(2);
+            localStorage.setItem('grocery_prices', JSON.stringify(customPrices));
+            
+            // تنبيه بسيط ومؤثر لتأكيد الحفظ بدون إزعاج
+            alert(`تم تحديث سعر المنتج رقم ${id} بنجاح إلى ${inputVal} ر.س`);
+        }
+
+        // تشغيل اللوحة فوراً
+        loadAdminPanel();
+    </script>
+</body>
+</html>
