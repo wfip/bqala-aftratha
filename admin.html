@@ -3,49 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سستّم إدارة أسعار البقالة</title>
+    <title>لوحة التحكم بالأسعار - صرح الغذاء</title>
+    <!-- Tailwind CSS لتصميم لوحة تحكم عصرية ونظيفة -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
         body { font-family: 'Tajawal', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-slate-50 text-slate-800">
 
-    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
+    <!-- الهيدر العلوي للوحة التحكم -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-red-600 flex items-center gap-2">
-                ⚙️ لوحة السستّم والتسعير الذكي (200 منتج)
+            <h1 class="text-xl font-bold flex items-center gap-2 text-green-400">
+                ⚙️ لوحة إدارة أسعار المنتجات المحدثة
             </h1>
-            <a href="index.html" class="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition">
-                الذهاب للمتجر وعرض الأسعار 🛒
+            <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition border border-slate-700">
+                👁️ عرض المتجر الرئيسي
             </a>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8 max-w-4xl">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-900">سستّم تغيير الأسعار الفوري</h2>
-                    <p class="text-xs text-gray-400 mt-1">عدل سعر أي منتج حقيقي بالأسفل واضغط حفظ ليتم تحديث السعر تلقائياً في صفحة الزبون.</p>
-                </div>
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- بار البحث والتحكم السريع -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="w-full md:w-1/2">
+                <label class="block text-xs font-bold text-slate-500 mb-2">البحث السريع عن منتج لتغيير سعره:</label>
+                <input type="text" id="search-input" oninput="searchProducts()" placeholder="اكتب اسم المنتج هنا... (مثال: بيبسي، تونا، حليب)" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            
+            <div class="flex gap-3 w-full md:w-auto justify-end">
+                <button onclick="resetAllPrices()" class="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-5 py-3 rounded-xl text-xs font-bold transition cursor-pointer">
+                    ↩️ إعادة كافة الأسعار الافتراضية
+                </button>
+            </div>
+        </div>
+
+        <!-- جدول المنتجات الـ 200 المطور -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-bold text-slate-700 text-sm">قائمة التحكم بالسلع والأسعار الحاليّة</h3>
+                <span class="text-xs text-slate-400">عدد المنتجات الظاهرة: <span id="visible-count" class="text-green-600 font-bold">200</span></span>
             </div>
 
-            <!-- جدول الـ 200 منتج كاملاً -->
-            <div class="overflow-x-auto max-h-[70vh] border border-gray-100 rounded-xl">
+            <div class="overflow-x-auto">
                 <table class="w-full text-right border-collapse">
                     <thead>
-                        <tr class="bg-gray-50 border-b border-gray-200 text-xs text-gray-500 sticky top-0">
-                            <th class="p-3">ID المنتج</th>
-                            <th class="p-3">اسم السلعة الحقيقي</th>
-                            <th class="p-3">القسم</th>
-                            <th class="p-3 w-36">السعر الجديد (ر.س)</th>
-                            <th class="p-3 text-center">الإجراء</th>
+                        <tr class="bg-slate-100 text-slate-600 text-xs font-bold border-b border-slate-200">
+                            <th class="p-4 w-16">رقم</th>
+                            <th class="p-4 w-20">الصورة</th>
+                            <th class="p-4">اسم المنتج الحقيقي</th>
+                            <th class="p-4">القسم والنوع</th>
+                            <th class="p-4 w-44">السعر الحالي (ر.س)</th>
+                            <th class="p-4 w-32">حفظ التعديل</th>
                         </tr>
                     </thead>
-                    <tbody id="admin-table-body" class="text-xs divide-y divide-gray-100 bg-white">
-                        <!-- الـ 200 سلعة يتم صفها هنا -->
+                    <tbody id="admin-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                        <!-- جافاسكريبت يقوم بتوليد الـ 200 سطر هنا -->
                     </tbody>
                 </table>
             </div>
@@ -58,110 +74,149 @@
             "المخبوزات والحلويات", "الزيوت والبهارات والمواد الأساسية", "المنظفات والعناية الشخصية"
         ];
 
+        // نفس مصفوفة الصور والبيانات الدقيقة الموجودة في المتجر ليكون التوافق تاماً
         const realProductsPool = {
             "الألبان والأجبان والبيض": [
-                "حليب المراعي كامل الدسم 1 لتر", "حليب نادك قليل الدسم 1 لتر", "لبن المراعي طازج 2 لتر", 
-                "زبادي نادك طازج 170 غرام", "قشطة التاج 155 غرام", "جبنة كرافت شيدر علب 100 غرام",
-                "جبنة بوك كاسات 500 غرام", "لبنة بينار تركية 400 غرام", "جبنة فيتا المراعي 200 غرام", 
-                "بيض دجاج محلي طبق 30 حبة", "زبدة لورباك غير مملحة 100 غرام", "كريمة الطبخ المراعي 500 مل",
-                "حليب مكثف محلى نستله 397 غرام", "جبنة موزاريلا مبشورة المراعي 200 غرام", "زبادي يوناني ندى سادة"
+                { name: "حليب المراعي كامل الدسم 1 لتر", img: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400" },
+                { name: "حليب نادك قليل الدسم 1 لتر", img: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400" },
+                { name: "لبن المراعي طازج 2 لتر", img: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400" },
+                { name: "زبادي نادك طازج 170 غرام", img: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400" },
+                { name: "قشطة التاج 155 غرام", img: "https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?w=400" },
+                { name: "جبنة كرافت شيدر علب 100 غرام", img: "https://images.unsplash.com/photo-1589881133595-a3c085cb1493?w=400" },
+                { name: "جبنة بوك كاسات 500 غرام", img: "https://images.unsplash.com/photo-1552763442-159ac9a24dce?w=400" },
+                { name: "لبنة بينار تركية 400 غرام", img: "https://images.unsplash.com/photo-1610393742133-114d2e1d816f?w=400" },
+                { name: "جبنة فيتا المراعي 200 غرام", img: "https://images.unsplash.com/photo-1608686207856-001b95cf60ca?w=400" },
+                { name: "بيض دجاج محلي طبق 30 حبة", img: "https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?w=400" },
+                { name: "زبدة لورباك غير مملحة 100 غرام", img: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400" }
             ],
             "المعلبات والأغذية المحفوظة": [
-                "تونا قودي تندرينا 80 غرام", "فول مدمس حدائق كاليفورنيا", "فاصوليا حمراء العلالي", 
-                "حمص حب أطلس علب", "ذرة حلوة قودي كاملة الحب", "صلصة طماطم السعودية 135 غرام",
-                "كاتشب طماطم ليبنز 340 غرام", "مايونيز قودي أصلي 250 مل", "شطة حارة رنا صغيرة",
-                "ورق عنب قودي 450 غرام", "مربى الفراولة حلواني 400 غرام", "عسل طبيعي الشفاء 250 غرام"
+                { name: "تونا قودي تندرينا 80 غرام", img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400" },
+                { name: "فول مدمس حدائق كاليفورنيا", img: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=400" },
+                { name: "فاصوليا حمراء العلالي", img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400" },
+                { name: "حمص حب أطلس علب", img: "https://images.unsplash.com/photo-1536147116438-62679a5e01f2?w=400" },
+                { name: "ذرة حلوة قودي كاملة الحب", img: "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=400" },
+                { name: "صلصة طماطم السعودية 135 غرام", img: "https://images.unsplash.com/photo-1607305387299-a3d9611cd46f?w=400" }
             ],
             "المشروبات والعصائر": [
-                "مياه معدنية نوفا 24×330 مل", "بيبسي علبة 325 مل", "سفن أب علبة 325 مل", 
-                "كوكا كولا كين 325 مل", "عصير برتقال ربيع 1 لتر", "عصير تفاح المراعي 200 مل",
-                "شاي ربيع إكسبريس 100 كيس", "شاي ليبتون فرط 200 غرام", "قهوة نسكافيه ريد كاب 100 غرام",
-                "مشروب فيمتو مركز 710 مل", "آيس تي ليبتون خوخ 320 مل", "مياه غازية بيرين 330 مل"
+                { name: "بيبسي علبة 325 مل", img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400" },
+                { name: "سفن أب علبة 325 مل", img: "https://images.unsplash.com/photo-1543257580-7269da773bf5?w=400" },
+                { name: "كوكا كولا كين 325 مل", img: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400" },
+                { name: "مياه معدنية نوفا 24×330 مل", img: "https://images.unsplash.com/photo-1608885898957-a599fb15d841?w=400" },
+                { name: "عصير برتقال ربيع 1 لتر", img: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=400" },
+                { name: "مشروب فيمتو مركز 710 مل", img: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400" },
+                { name: "آيس تي ليبتون خوخ 320 مل", img: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400" }
             ],
             "المخبوزات والحلويات": [
-                "خبز توست أبيض لوزين", "خبز صامولي لوزين 6 حبات", "كرواسون لوزين شوكولاتة", 
-                "خبز برجر هرفي بالسمسم", "بسكويت شاي ميموريز", "بسكويت ديمة بالتمر",
-                "كيك بار لوزين فانيلا", "بطاطس ليز بالملح كبير", "شيبس برينجلز أصلي",
-                "شوكولاتة جلاكسي ناعمة", "بسكويت أوريو أصلي", "ويفر لواكر بكريم الكاكاو"
+                { name: "خبز توست أبيض لوزين", img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400" },
+                { name: "خبز صامولي لوزين 6 حبات", img: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400" },
+                { name: "بطاطس ليز بالملح كبير", img: "https://images.unsplash.com/photo-1566478431344-19515568bc1b?w=400" }
             ],
             "الزيوت والبهارات والمواد الأساسية": [
-                "أرز بسمتي الشعلان 5 كغم", "زيت طبخ عافي ذرة 1.5 لتر", "زيت زيتون الوزير 500 مل",
-                "سكر الأسرة ناعم 2 كغم", "ملح طعام ساسا يودي", "مكرونة قودي خواتم 450 غرام",
-                "شعيرية إندومي دجاج بالثوم", "دقيق كويتي فاخر 1 كغم", "شوفان كويكر علب 500 غرام",
-                "مرقة دجاج ماجي 24 مكعب", "خل أبيض رنا 473 مل", "نشا ذرة العلالي 100 غرام"
+                { name: "أرز بسمتي الشعلان 5 كغم", img: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400" },
+                { name: "زيت طبخ عافي ذرة 1.5 لتر", img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400" }
             ],
             "المنظفات والعناية الشخصية": [
-                "صابون صحون فيري بالليمون 1 لتر", "مناديل فاين ناعمة 10×80 منديل", "شامبو بانتين بديل الزيت",
-                "صابون ديتول مستر 115 غرام", "معجون أسنان كولجيت أصلي", "سائل غسيل ملابس تايد 2.5 لتر",
-                "مسترق للجو جليد لافندر", "مبيّض ملابس كلوركس أصلي", "منظف أرضيات داك ورد 3 لتر",
-                "شامبو عباءة برسيل 1 لتر", "صابون يدين لايفبوي 200 مل", "شفرات حلاقة جيليت بلو 2"
+                { name: "صابون صحون فيري بالليمون 1 لتر", img: "https://images.unsplash.com/photo-1607006342456-ba274cb2269f?w=400" },
+                { name: "مناديل فاين ناعمة 10×80 منديل", img: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400" }
             ]
         };
 
+        let products = [];
         let customPrices = JSON.parse(localStorage.getItem('grocery_prices')) || {};
 
-        function loadAdminPanel() {
+        // بناء الـ 200 منتج بشكل متطابق مع المتجر الرئيسي
+        let idCounter = 1;
+        while (products.length < 200) {
+            for (let cat of categories) {
+                if (products.length >= 200) break;
+                
+                let pool = realProductsPool[cat] || [{ name: "منتج عام", img: "" }];
+                let poolIndex = (idCounter - 1) % pool.length;
+                let currentItem = pool[poolIndex];
+                
+                let iteration = Math.floor((idCounter - 1) / pool.length);
+                let suffix = iteration > 0 ? ` (عبوة إضافية ${iteration + 1})` : "";
+                
+                let itemId = idCounter;
+                let defaultPrice = ((idCounter % 15) + 5.50);
+                let finalPrice = customPrices[itemId] ? customPrices[itemId] : defaultPrice;
+
+                products.push({
+                    id: itemId,
+                    name: `${currentItem.name}${suffix}`,
+                    category: cat,
+                    price: parseFloat(finalPrice),
+                    image: currentItem.img
+                });
+                idCounter++;
+            }
+        }
+
+        function renderTable(items) {
             const tbody = document.getElementById('admin-table-body');
             tbody.innerHTML = '';
+            document.getElementById('visible-count').innerText = items.length;
 
-            let idCounter = 1;
-            let loadedCount = 0;
+            items.forEach(product => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 text-slate-400 font-medium">${product.id}</td>
+                        <td class="p-4">
+                            <img src="${product.image}" alt="" class="w-10 h-10 object-cover rounded-lg bg-slate-100 border border-slate-200">
+                        </td>
+                        <td class="p-4 font-bold text-slate-800">${product.name}</td>
+                        <td class="p-4"><span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">${product.category}</span></td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-1.5">
+                                <input type="number" id="price-input-${product.id}" step="0.01" value="${product.price.toFixed(2)}" class="w-24 border border-slate-200 rounded-lg p-1.5 text-center font-bold text-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <span class="text-xs text-slate-400">ر.س</span>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <button onclick="savePrice(${product.id})" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer">
+                                حفظ 💾
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
 
-            while (loadedCount < 200) {
-                for (let cat of categories) {
-                    if (loadedCount >= 200) break;
-                    
-                    let pool = realProductsPool[cat];
-                    let poolIndex = (idCounter - 1) % pool.length;
-                    let baseName = pool[poolIndex];
-                    
-                    let iteration = Math.floor((idCounter - 1) / pool.length);
-                    let suffix = iteration > 0 ? ` (حجم عائلي أو عبوة إضافية ${iteration})` : "";
-                    
-                    let itemId = idCounter;
-                    let defaultPrice = ((idCounter % 18) + 4.75);
-                    let currentPrice = customPrices[itemId] ? customPrices[itemId] : defaultPrice;
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50/50">
-                            <td class="p-3 font-mono text-gray-400 font-bold">#${itemId}</td>
-                            <td class="p-3 font-bold text-gray-700">${baseName}${suffix}</td>
-                            <td class="p-3"><span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">${cat}</span></td>
-                            <td class="p-3">
-                                <div class="flex items-center gap-1">
-                                    <input type="number" id="price-input-${itemId}" value="${parseFloat(currentPrice).toFixed(2)}" step="0.01" min="0.5" 
-                                        class="w-full border border-gray-200 rounded-lg p-1.5 text-center font-bold text-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50">
-                                    <span class="text-xs text-gray-400">ر.س</span>
-                                </div>
-                            </td>
-                            <td class="p-3 text-center">
-                                <button onclick="savePrice(${itemId})" class="bg-green-500 hover:bg-green-600 text-white font-bold text-xs px-3 py-2 rounded-xl transition cursor-pointer shadow-sm shadow-green-50">
-                                    حفظ وتحديث 💾
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    idCounter++;
-                    loadedCount++;
-                }
-            }
+        function searchProducts() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
+            renderTable(filtered);
         }
 
         function savePrice(id) {
             const inputVal = document.getElementById(`price-input-${id}`).value;
-            if(!inputVal || inputVal <= 0) {
-                alert("يرجى كتابة سعر صحيح أكبر من الصفر!");
+            const newPrice = parseFloat(inputVal);
+
+            if (isNaN(newPrice) || newPrice < 0) {
+                alert("الرجاء إدخال سعر صحيح وموجب.");
                 return;
             }
 
-            customPrices[id] = parseFloat(inputVal).toFixed(2);
+            // تحديث في الذاكرة المحلية لتأخذه صفحة المتجر فوراً
+            customPrices[id] = newPrice;
             localStorage.setItem('grocery_prices', JSON.stringify(customPrices));
-            
-            alert(`✅ سستّم: تم تحديث السعر بنجاح للمنتج رقم #${id} إلى ${inputVal} ر.س.`);
+
+            // تحديث الكائن في الصفحة الحالية
+            const prod = products.find(p => p.id === id);
+            if (prod) prod.price = newPrice;
+
+            alert(`✅ تم تحديث سعر "${prod.name}" بنجاح إلى ${newPrice.toFixed(2)} ر.س`);
         }
 
-        // تشغيل فوري للوحة عند الفتح
-        loadAdminPanel();
+        function resetAllPrices() {
+            if (confirm("هل أنت متأكد من رغبتك في حذف كل الأسعار المعدلة والعودة للأسعار الافتراضية؟")) {
+                localStorage.removeItem('grocery_prices');
+                location.reload();
+            }
+        }
+
+        // تشغيل الجدول عند تحميل الصفحة لأول مرة
+        renderTable(products);
     </script>
 </body>
 </html>
