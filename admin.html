@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم والطلبات - صرح الغذاء</title>
-    <!-- Tailwind CSS لتصميم لوحة تحكم عصرية ونظيفة -->
+    <!-- Tailwind CSS لتنسيق لوحة الإدارة -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
@@ -13,79 +13,121 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-    <!-- الهيدر العلوي للوحة التحكم -->
-    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold flex items-center gap-2 text-green-400">
-                ⚙️ لوحة إدارة الأسعار والطلبات الواردة
-            </h1>
-            <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition border border-slate-700">
-                👁️ عرض المتجر الرئيسي
-            </a>
+    <!-- شاشة قفل لوحة التحكم بكلمة مرور -->
+    <div id="auth-overlay" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm text-center space-y-4">
+            <div class="text-3xl">🔐</div>
+            <h2 class="text-lg font-bold text-slate-800">لوحة الإدارة المحمية</h2>
+            <p class="text-xs text-slate-400">الرجاء إدخال رمز الأمان للوصول إلى الأسعار والطلبات</p>
+            <input type="password" id="admin-password-input" placeholder="أدخل كلمة المرور هنا" class="w-full border border-slate-200 rounded-xl p-3 text-center font-bold tracking-widest text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button onclick="checkAdminAuth()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition text-sm cursor-pointer shadow-md shadow-green-100">
+                تسجيل الدخول 🔓
+            </button>
+            <p id="auth-error" class="text-xs text-red-500 font-medium hidden">❌ كلمة المرور غير صحيحة، حاول مجدداً!</p>
         </div>
-    </header>
+    </div>
 
-    <main class="container mx-auto px-4 py-8 space-y-8">
-        
-        <!-- ================= قـسـم الـطـلـبـات الـواردة ================= -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        📥 طلبات الشراء الواردة من المتجر
-                    </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">تظهر هنا الطلبات التي يرسلها الزبائن من صفحة السلة مباشرة</p>
+    <!-- المحتوى الرئيسي للوحة التحكم (يظهر بعد كتابة الرمز الصحيح) -->
+    <div id="admin-content" class="hidden">
+        <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold flex items-center gap-2 text-green-400">
+                    ⚙️ لوحة إدارة الأسعار والطلبات الواردة
+                </h1>
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition border border-slate-700">
+                    👁️ عرض المتجر الرئيسي
+                </a>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-8 space-y-8">
+            
+            <!-- قـسـم الـطـلـبـات الـواردة والموقع الجغرافي -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            📥 طلبات الشراء ومواقع الزبائن
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">تظهر هنا تفاصيل الطلب مع موقع العميل الجغرافي للتوصيل بدقة</p>
+                    </div>
+                    <button onclick="clearAllOrders()" class="text-xs text-red-500 hover:underline font-medium cursor-pointer">حذف جميع الطلبات</button>
                 </div>
-                <button onclick="clearAllOrders()" class="text-xs text-red-500 hover:underline font-medium cursor-pointer">حذف جميع الطلبات</button>
-            </div>
-            
-            <!-- جدول أو قائمة عرض الطلبات -->
-            <div id="orders-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-                <p class="text-slate-400 text-sm text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">لا توجد طلبات واردة حالياً</p>
-            </div>
-        </div>
-
-        <!-- بار البحث والتحكم السريع بالأسعار -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div class="w-full md:w-1/2">
-                <label class="block text-xs font-bold text-slate-500 mb-2">البحث السريع عن منتج لتعديل سعره:</label>
-                <input type="text" id="search-input" oninput="searchProducts()" placeholder="اكتب اسم المنتج هنا... (مثال: بيبسي، تونا، حليب)" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-            </div>
-            
-            <div class="flex gap-3 w-full md:w-auto justify-end">
-                <button onclick="resetAllPrices()" class="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-5 py-3 rounded-xl text-xs font-bold transition cursor-pointer">
-                    ↩️ إعادة الأسعار الافتراضية للكل
-                </button>
-            </div>
-        </div>
-
-        <!-- جدول المنتجات الـ 200 (بدون صور) -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                <h3 class="font-bold text-slate-700 text-sm">تعديل أسعار قائمة السلع</h3>
-                <span class="text-xs text-slate-400">عدد السلع: <span id="visible-count" class="text-green-600 font-bold">200</span></span>
+                
+                <div id="orders-container" class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                    <p class="text-slate-400 text-sm text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">لا توجد طلبات واردة حالياً</p>
+                </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-right border-collapse">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-600 text-xs font-bold border-b border-slate-200">
-                            <th class="p-4 w-16">رقم</th>
-                            <th class="p-4">اسم المنتج الحقيقي</th>
-                            <th class="p-4">القسم والنوع</th>
-                            <th class="p-4 w-44">السعر الحالي (ر.س)</th>
-                            <th class="p-4 w-32">حفظ التعديل</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
-                        <!-- جافاسكريبت يقوم بتوليد الـ 200 سطر هنا -->
-                    </tbody>
-                </table>
+            <!-- التحكم وتعديل أسعار الـ 200 منتج -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="w-full md:w-1/2">
+                    <label class="block text-xs font-bold text-slate-500 mb-2">البحث السريع عن منتج لتعديل سعره:</label>
+                    <input type="text" id="search-input" oninput="searchProducts()" placeholder="اكتب اسم المنتج لتعديله..." class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <button onclick="resetAllPrices()" class="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-5 py-3 rounded-xl text-xs font-bold transition cursor-pointer">
+                        ↩️ إعادة الأسعار الافتراضية للكل
+                    </button>
+                </div>
             </div>
-        </div>
-    </main>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-700 text-sm">تعديل أسعار قائمة السلع</h3>
+                    <span class="text-xs text-slate-400">عدد السلع: <span id="visible-count" class="text-green-600 font-bold">200</span></span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-xs font-bold border-b border-slate-200">
+                                <th class="p-4 w-16">رقم</th>
+                                <th class="p-4">اسم المنتج</th>
+                                <th class="p-4">القسم</th>
+                                <th class="p-4 w-44">السعر الحالي (ر.س)</th>
+                                <th class="p-4 w-32">حفظ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                            <!-- الجافاسكريبت يبني الجدول هنا -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
+        // نظام تذكر تسجيل الدخول لحماية الجلسة عند التحديث
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('admin_logged') === 'true') {
+                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                renderTable(products);
+                loadOrders();
+            }
+        });
+
+        // التحقق من رمز الحماية والأمان (123456789)
+        function checkAdminAuth() {
+            const passInput = document.getElementById('admin-password-input').value;
+            if (passInput === '123456789') {
+                sessionStorage.setItem('admin_logged', 'true');
+                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                renderTable(products);
+                loadOrders();
+            } else {
+                document.getElementById('auth-error').classList.remove('hidden');
+            }
+        }
+
+        // إتاحة الدخول عند ضغط زر Enter
+        document.getElementById('admin-password-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkAdminAuth();
+        });
+
         const categories = [
             "الألبان والأجبان والبيض", "المعلبات والأغذية المحفوظة", "المشروبات والعصائر", 
             "المخبوزات والحلويات", "الزيوت والبهارات والمواد الأساسية", "المنظفات والعناية الشخصية"
@@ -125,7 +167,6 @@
         let products = [];
         let customPrices = JSON.parse(localStorage.getItem('grocery_prices')) || {};
 
-        // بناء قائمة الـ 200 منتج الحقيقية
         let idCounter = 1;
         while (products.length < 200) {
             for (let cat of categories) {
@@ -152,7 +193,6 @@
             }
         }
 
-        // دالة عرض جدول التحكم بالأسعار (بدون عمود الصور)
         function renderTable(items) {
             const tbody = document.getElementById('admin-table-body');
             tbody.innerHTML = '';
@@ -189,19 +229,12 @@
         function savePrice(id) {
             const inputVal = document.getElementById(`price-input-${id}`).value;
             const newPrice = parseFloat(inputVal);
-
-            if (isNaN(newPrice) || newPrice < 0) {
-                alert("الرجاء إدخال سعر صحيح.");
-                return;
-            }
+            if (isNaN(newPrice) || newPrice < 0) return;
 
             customPrices[id] = newPrice;
             localStorage.setItem('grocery_prices', JSON.stringify(customPrices));
-
             const prod = products.find(p => p.id === id);
             if (prod) prod.price = newPrice;
-
-            alert(`✅ تم تحديث السعر بنجاح!`);
         }
 
         function resetAllPrices() {
@@ -211,7 +244,7 @@
             }
         }
 
-        // ================= نظام إدارة وعرض الطلبات الواردة =================
+        // عرض الطلبات وموقع الزبون الجغرافي بدقة
         function loadOrders() {
             const container = document.getElementById('orders-container');
             const orders = JSON.parse(localStorage.getItem('grocery_orders')) || [];
@@ -230,6 +263,19 @@
                     </div>
                 `).join('');
 
+                // فحص وعرض زر الموقع للزبون على خرائط جوجل
+                let locationButtonHtml = '';
+                if (order.location && order.location.lat && order.location.lng) {
+                    const mapsUrl = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;
+                    locationButtonHtml = `
+                        <a href="${mapsUrl}" target="_blank" class="inline-flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">
+                            📌 فتح موقع الزبون على الخريطة
+                        </a>
+                    `;
+                } else {
+                    locationButtonHtml = `<span class="text-xs text-slate-400 font-medium">📍 الموقع الجغرافي لم يرسل أو تم رفضه من العميل</span>`;
+                }
+
                 container.innerHTML += `
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                         <div class="flex justify-between items-start">
@@ -244,9 +290,12 @@
                         <div class="bg-white p-3 rounded-lg border border-slate-100 divide-y divide-slate-100">
                             ${itemsList}
                         </div>
-                        <div class="flex justify-between items-center pt-1">
-                            <span class="text-xs font-bold px-2 py-1 rounded bg-amber-50 text-amber-600 border border-amber-100">قيد الانتظار شحنها</span>
-                            <button onclick="deleteOrder(${index})" class="text-xs text-red-500 hover:text-red-700 transition font-medium cursor-pointer">🚨 حذف الطلب</button>
+                        <div class="flex flex-wrap justify-between items-center gap-2 pt-1 border-t border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold px-2 py-1 rounded bg-amber-50 text-amber-600 border border-amber-100">قيد الانتظار</span>
+                                ${locationButtonHtml}
+                            </div>
+                            <button onclick="deleteOrder(${index})" class="text-xs text-red-400 hover:text-red-600 transition font-medium cursor-pointer">حذف الطلب</button>
                         </div>
                     </div>
                 `;
@@ -255,9 +304,9 @@
 
         function deleteOrder(indexFromTop) {
             let orders = JSON.parse(localStorage.getItem('grocery_orders')) || [];
-            orders.reverse(); // لكي يتطابق الاندكس المعروض مع الترتيب
+            orders.reverse();
             orders.splice(indexFromTop, 1);
-            orders.reverse(); // إعادته لوضعه قبل الحفظ
+            orders.reverse();
             localStorage.setItem('grocery_orders', JSON.stringify(orders));
             loadOrders();
         }
@@ -269,16 +318,9 @@
             }
         }
 
-        // الاستماع لأي طلبات جديدة تأتي من صفحة المتجر وتحديث القائمة فوراً
         window.addEventListener('storage', (e) => {
-            if (e.key === 'grocery_orders') {
-                loadOrders();
-            }
+            if (e.key === 'grocery_orders') loadOrders();
         });
-
-        // تشغيل الجداول والبيانات
-        renderTable(products);
-        loadOrders();
     </script>
 </body>
 </html>
