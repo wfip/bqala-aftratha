@@ -1,20 +1,301 @@
-function checkout() {
-    if (cart.length === 0) {
-        alert("السلة فارغة حالياً! قم بإضافة المنتجات أولاً.");
-        return;
-    }
-    
-    // حفظ الطلب في الذاكرة المشتركة لتراه لوحة التحكم
-    let existingOrders = JSON.parse(localStorage.getItem('grocery_orders')) || [];
-    let newOrder = {
-        id: Math.floor(1000 + Math.random() * 9000),
-        date: new Date().toLocaleString('ar-EG'),
-        items: cart,
-        total: document.getElementById('cart-total').innerText
-    };
-    existingOrders.push(newOrder);
-    localStorage.setItem('grocery_orders', JSON.stringify(existingOrders));
-    
-    alert(`🎉 تم إرسال طلبك بنجاح إلى لوحة التحكم!\nرقم الطلب: #${newOrder.id}`);
-    clearCart();
-}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تموينات صرح الغذاء - طلبات الزبائن</title>
+    <!-- Tailwind CSS لتصميم سريع ومرتب -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- الهيدر والبار العلوي -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-green-600 flex items-center gap-2">
+                🛒 تموينات صرح الغذاء
+            </h1>
+            <div class="flex items-center gap-4">
+                <a href="admin.html" target="_blank" class="text-xs font-medium text-gray-400 hover:text-green-600 transition">
+                    ⚙️ لوحة الإدارة
+                </a>
+                <button onclick="toggleCart()" class="relative bg-green-500 text-white px-5 py-2 rounded-full font-bold hover:bg-green-600 transition flex items-center gap-2 cursor-pointer shadow-sm">
+                    <span>السلة</span>
+                    <span id="cart-count" class="bg-white text-green-600 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى والتقسيم -->
+    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+        
+        <!-- قـسـم الـمـنـتـجـات الرئيسي -->
+        <div class="w-full lg:w-3/4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">قائمة المنتجات والسلع</h2>
+                    <p class="text-xs text-gray-400 mt-1">يحتوي المتجر على <span id="total-products" class="text-green-600 font-bold">200</span> منتج مصنف حسب الأقسام.</p>
+                </div>
+                <select id="category-filter" onchange="filterProducts()" class="border border-gray-200 rounded-xl p-2.5 bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
+                    <option value="all">كل الأقسام والمنتجات</option>
+                    <option value="الألبان والأجبان والبيض">الألبان والأجبان والبيض</option>
+                    <option value="المعلبات والأغذية المحفوظة">المعلبات والأغذية المحفوظة</option>
+                    <option value="المشروبات والعصائر">المشروبات والعصائر</option>
+                    <option value="المخبوزات والحلويات">المخبوزات والحلويات</option>
+                    <option value="الزيوت والبهارات والمواد الأساسية">الزيوت والبهارات والمواد الأساسية</option>
+                    <option value="المنظفات والعناية الشخصية">المنظفات والعناية الشخصية</option>
+                </select>
+            </div>
+
+            <!-- شبكة عرض المنتجات الـ 200 (بدون صور) -->
+            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- جافاسكريبت يبني السلع هنا -->
+            </div>
+        </div>
+
+        <!-- قـسـم الـسـلـة الـجـانـبـي -->
+        <div id="cart-sidebar" class="w-full lg:w-1/4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit lg:sticky lg:top-24">
+            <h3 class="text-base font-bold mb-4 flex items-center justify-between">
+                <span>سلة المشتريات 🛍️</span>
+                <button onclick="clearCart()" class="text-xs text-red-500 hover:underline font-medium cursor-pointer">حذف الكل</button>
+            </h3>
+            
+            <div id="cart-items" class="space-y-3 max-h-72 overflow-y-auto mb-4">
+                <p class="text-gray-400 text-xs text-center py-6">السلة فارغة، أضف منتجات للبدء</p>
+            </div>
+            
+            <hr class="border-gray-100 my-4">
+            
+            <div class="space-y-2 mb-6 text-sm">
+                <div class="flex justify-between text-gray-500">
+                    <span>عدد القطع:</span>
+                    <span id="cart-pieces-count">0 قطعة</span>
+                </div>
+                <div class="flex justify-between font-bold text-base text-gray-900">
+                    <span>الإجمالي النهائي:</span>
+                    <span id="cart-total" class="text-green-600">0.00 ر.س</span>
+                </div>
+            </div>
+
+            <button onclick="checkout()" class="w-full bg-green-500 text-white text-center py-3 rounded-xl font-bold hover:bg-green-600 transition shadow-md cursor-pointer text-xs">
+                تأكيد وإرسال طلب الشراء 💳
+            </button>
+        </div>
+    </main>
+
+    <script>
+        const categories = [
+            "الألبان والأجبان والبيض", "المعلبات والأغذية المحفوظة", "المشروبات والعصائر", 
+            "المخبوزات والحلويات", "الزيوت والبهارات والمواد الأساسية", "المنظفات والعناية الشخصية"
+        ];
+
+        // مصفوفة أسماء المنتجات بدون روابط صور
+        const realProductsPool = {
+            "الألبان والأجبان والبيض": [
+                { name: "حليب المراعي كامل الدسم 1 لتر" }, { name: "حليب نادك قليل الدسم 1 لتر" },
+                { name: "لبن المراعي طازج 2 لتر" }, { name: "زبادي نادك طازج 170 غرام" },
+                { name: "قشطة التاج 155 غرام" }, { name: "جبنة كرافت شيدر علب 100 غرام" },
+                { name: "جبنة بوك كاسات 500 غرام" }, { name: "لبنة بينار تركية 400 غرام" },
+                { name: "جبنة فيتا المراعي 200 غرام" }, { name: "بيض دجاج محلي طبق 30 حبة" }
+            ],
+            "المعلبات والأغذية المحفوظة": [
+                { name: "تونا قودي تندرينا 80 غرام" }, { name: "فول مدمس حدائق كاليفورنيا" },
+                { name: "فاصوليا حمراء العلالي" }, { name: "حمص حب أطلس علب" },
+                { name: "ذرة حلوة قودي كاملة الحب" }, { name: "صلصة طماطم السعودية 135 غرام" }
+            ],
+            "المشروبات والعصائر": [
+                { name: "بيبسي علبة 325 مل" }, { name: "سفن أب علبة 325 مل" },
+                { name: "كوكا كولا كين 325 مل" }, { name: "مياه معدنية نوفا 24×330 مل" },
+                { name: "عصير برتقال ربيع 1 لتر" }, { name: "مشروب فيمتو مركز 710 مل" },
+                { name: "آيس تي ليبتون خوخ 320 مل" }
+            ],
+            "المخبوزات والحلويات": [
+                { name: "خبز توست أبيض لوزين" }, { name: "خبز صامولي لوزين 6 حبات" },
+                { name: "بطاطس ليز بالملح كبير" }
+            ],
+            "الزيوت والبهارات والمواد الأساسية": [
+                { name: "أرز بسمتي الشعلان 5 كغم" }, { name: "زيت طبخ عافي ذرة 1.5 لتر" }
+            ],
+            "المنظفات والعناية الشخصية": [
+                { name: "صابون صحون فيري بالليمون 1 لتر" }, { name: "مناديل فاين ناعمة 10×80 منديل" }
+            ]
+        };
+
+        let products = [];
+        let customPrices = JSON.parse(localStorage.getItem('grocery_prices')) || {};
+
+        // توليد قائمة الـ 200 منتج
+        let idCounter = 1;
+        while (products.length < 200) {
+            for (let cat of categories) {
+                if (products.length >= 200) break;
+                
+                let pool = realProductsPool[cat] || [{ name: "منتج عام" }];
+                let poolIndex = (idCounter - 1) % pool.length;
+                let currentItem = pool[poolIndex];
+                
+                let iteration = Math.floor((idCounter - 1) / pool.length);
+                let suffix = iteration > 0 ? ` (عبوة إضافية ${iteration + 1})` : "";
+                
+                let itemId = idCounter;
+                let defaultPrice = ((idCounter % 15) + 5.50);
+                let finalPrice = customPrices[itemId] ? customPrices[itemId] : defaultPrice;
+
+                products.push({
+                    id: itemId,
+                    name: `${currentItem.name}${suffix}`,
+                    category: cat,
+                    price: parseFloat(finalPrice)
+                });
+                idCounter++;
+            }
+        }
+
+        let cart = [];
+
+        function displayProducts(items) {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+            
+            items.forEach(product => {
+                grid.innerHTML += `
+                    <div class="bg-white rounded-xl p-4 border border-gray-100 hover:border-green-200 transition flex flex-col justify-between">
+                        <div>
+                            <span class="text-[10px] text-gray-500 bg-gray-100 font-bold px-2 py-0.5 rounded">${product.category}</span>
+                            <h4 class="font-bold text-sm mt-2 text-gray-800 leading-snug">${product.name}</h4>
+                        </div>
+                        <div class="mt-4 pt-2 border-t border-gray-50 flex items-center justify-between">
+                            <div class="text-green-600 font-bold text-sm">${product.price.toFixed(2)} ر.س</div>
+                            <div class="flex gap-1">
+                                <button onclick="addToCart(${product.id})" class="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-green-600 transition cursor-pointer">
+                                    + إضافة
+                                </button>
+                                <button onclick="removeFromCart(${product.id})" class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1.5 rounded-lg hover:bg-gray-200 transition cursor-pointer">
+                                    -
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterProducts() {
+            const cat = document.getElementById('category-filter').value;
+            if (cat === 'all') {
+                displayProducts(products);
+            } else {
+                const filtered = products.filter(p => p.category === cat);
+                displayProducts(filtered);
+            }
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const cartItem = cart.find(item => item.id === id);
+            if (cartItem) {
+                cartItem.qty++;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            updateCartUI();
+        }
+
+        function removeFromCart(id) {
+            const cartItem = cart.find(item => item.id === id);
+            if (cartItem) {
+                cartItem.qty--;
+                if (cartItem.qty <= 0) {
+                    cart = cart.filter(item => item.id !== id);
+                }
+            }
+            updateCartUI();
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const piecesCount = document.getElementById('cart-pieces-count');
+            const cartTotal = document.getElementById('cart-total');
+            
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-gray-400 text-xs text-center py-6">السلة فارغة، أضف منتجات للبدء</p>';
+                cartCount.innerText = '0';
+                piecesCount.innerText = '0 قطعة';
+                cartTotal.innerText = '0.00 ر.س';
+                return;
+            }
+
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+            let totalQty = 0;
+
+            cart.forEach(item => {
+                let itemTotal = item.price * item.qty;
+                total += itemTotal;
+                totalQty += item.qty;
+
+                cartItemsContainer.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg text-xs border border-gray-100">
+                        <div>
+                            <p class="font-bold text-gray-800">${item.name}</p>
+                            <p class="text-gray-400 mt-0.5">${item.price.toFixed(2)} ر.س × ${item.qty}</p>
+                        </div>
+                        <span class="font-bold text-gray-700">${itemTotal.toFixed(2)} ر.س</span>
+                    </div>
+                `;
+            });
+
+            cartCount.innerText = totalQty;
+            piecesCount.innerText = `${totalQty} قطعة`;
+            cartTotal.innerText = total.toFixed(2) + ' ر.س';
+        }
+
+        // إرسال الطلب وحفظه في النظام للوحة التحكم تلقائياً
+        function checkout() {
+            if (cart.length === 0) {
+                alert("السلة فارغة حالياً! قم بإضافة المنتجات أولاً.");
+                return;
+            }
+            
+            let existingOrders = JSON.parse(localStorage.getItem('grocery_orders')) || [];
+            
+            let newOrder = {
+                id: Math.floor(1000 + Math.random() * 9000),
+                date: new Date().toLocaleString('ar-EG'),
+                items: cart.map(item => ({ name: item.name, qty: item.qty, price: item.price })),
+                total: document.getElementById('cart-total').innerText
+            };
+            
+            existingOrders.push(newOrder);
+            localStorage.setItem('grocery_orders', JSON.stringify(existingOrders));
+            
+            alert(`🎉 تم إرسال طلبك إلى الإدارة بنجاح!\nرقم الطلب الخاص بك: #${newOrder.id}`);
+            clearCart();
+        }
+
+        // مزامنة الأسعار إذا تعدلت من لوحة الإدارة وهي مفتوحة
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'grocery_prices') {
+                customPrices = JSON.parse(e.newValue) || {};
+                products.forEach(p => {
+                    if (customPrices[p.id]) p.price = parseFloat(customPrices[p.id]);
+                });
+                filterProducts();
+            }
+        });
+
+        displayProducts(products);
+    </script>
+</body>
+</html>
