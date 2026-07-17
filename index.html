@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بقاله تجريبيه</title>
+    <!-- Tailwind CSS لتصميم نظيف ومرتب -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- الهيدر -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-green-600 flex items-center gap-2">
+                🛒 صرح الغذاء المميز
+            </h1>
+            <div class="flex items-center gap-4">
+                <a href="admin.html" target="_blank" class="text-sm text-gray-500 hover:text-green-600 transition">لوحة التحكم ⚙️</a>
+                <button onclick="toggleCart()" class="relative bg-green-500 text-white px-4 py-2 rounded-full font-medium hover:bg-green-600 transition flex items-center gap-2 cursor-pointer">
+                    <span>السلة</span>
+                    <span id="cart-count" class="bg-white text-green-600 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+        
+        <!-- قسم المنتجات -->
+        <div class="w-full md:w-3/4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">كل المنتجات (<span id="total-products">200</span> منتج)</h2>
+                <select id="category-filter" onchange="filterProducts()" class="border border-gray-200 rounded-lg p-2 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="all">كل الأقسام</option>
+                    <option value="ألبان وأجبان">ألبان وأجبان</option>
+                    <option value="معلبات">معلبات</option>
+                    <option value="مشروبات">مشروبات وعصائر</option>
+                    <option value="مخبوزات">مخبوزات وحلويات</option>
+                    <option value="منظفات">منظفات ومستلزمات</option>
+                </select>
+            </div>
+
+            <!-- شبكة المنتجات -->
+            <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- المنتجات تتولد هنا عبر الجافاسكريبت -->
+            </div>
+        </div>
+
+        <!-- نافذة السلة الجانبية (شاشات كبيرة) أو الثابتة -->
+        <div id="cart-sidebar" class="w-full md:w-1/4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit sticky top-24">
+            <h3 class="text-lg font-bold mb-4 flex items-center justify-between">
+                <span>تفاصيل السلة</span>
+                <button onclick="clearCart()" class="text-xs text-red-500 hover:underline cursor-pointer">تفريغ</button>
+            </h3>
+            <div id="cart-items" class="space-y-3 max-h-60 overflow-y-auto mb-4">
+                <p class="text-gray-400 text-sm text-center py-4">السلة فارغة حالياً</p>
+            </div>
+            <hr class="border-gray-100 my-4">
+            <div class="flex justify-between font-bold text-lg mb-6">
+                <span>الإجمالي:</span>
+                <span id="cart-total">0.00 ر.س</span>
+            </div>
+            <button onclick="checkout()" class="w-full bg-green-500 text-white text-center py-3 rounded-xl font-bold hover:bg-green-600 transition shadow-lg shadow-green-100 cursor-pointer">
+                تأكيد الشراء 💳
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // توليد 200 منتج تلقائياً بأسماء واقعية للبقالة
+        const categories = ["ألبان وأجبان", "معلبات", "مشروبات", "مخبوزات", "منظفات"];
+        const sampleNames = {
+            "ألبان وأجبان": ["حليب طازج", "جبنة فيتا", "لبنة تركية", "زبادي كامل الدسم", "قشطة طازجة", "زبدة غير مملحة"],
+            "معلبات": ["تونا قطعة واحدة", "فول مدمس", "فاصوليا حمراء", "حمص حب", "ذرة حلوة", "صلصة طماطم"],
+            "مشروبات": ["عصير برتقال", "مياه معدنية", "مشروب غازي", "شاي أحمر", "قهوة سريعة التحضير", "آيس تي"],
+            "مخبوزات": ["خبز توست", "صامولي", "كرواسون سادة", "بسكويت شاي", "كيك شوكولاتة", "شابورة"],
+            "منظفات": ["صابون صحون", "مناديل ورق", "شامبو عبوة", "مطهر أرضيات", "سائل غسيل الأيدي"]
+        };
+
+        let products = [];
+        
+        // التحقق من وجود أسعار معدلة في الـ LocalStorage أولاً
+        let customPrices = JSON.parse(localStorage.getItem('grocery_prices')) || {};
+
+        // بناء الـ 200 منتج بالضبط
+        let idCounter = 1;
+        for (let i = 0; i < 200; i++) {
+            let cat = categories[i % categories.length];
+            let namesList = sampleNames[cat];
+            let baseName = namesList[i % namesList.length];
+            let itemId = idCounter++;
+            
+            // السعر الافتراضي عشوائي بين 2 و 45، أو السعر المعدل من لوحة التحكم
+            let defaultPrice = ((i % 15) + 3.5).toFixed(2);
+            let finalPrice = customPrices[itemId] ? customPrices[itemId] : defaultPrice;
+
+            products.push({
+                id: itemId,
+                name: `${baseName} رقم ${itemId}`,
+                category: cat,
+                price: parseFloat(finalPrice),
+                image: `https://picsum.photos/id/${(itemId % 50) + 10}/200/200` // صور عشوائية مرتبة
+            });
+        }
+
+        let cart = [];
+
+        // عرض المنتجات في الصفحة
+        function displayProducts(items) {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+            
+            items.forEach(product => {
+                grid.innerHTML += `
+                    <div class="bg-white rounded-2xl p-4 border border-gray-100 hover:shadow-md transition flex flex-col justify-between">
+                        <div>
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-32 object-cover rounded-xl mb-3 bg-gray-50">
+                            <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-md">${product.category}</span>
+                            <h4 class="font-medium text-sm mt-2 text-gray-700 h-10 overflow-hidden leading-tight">${product.name}</h4>
+                        </div>
+                        <div class="mt-4">
+                            <div class="text-green-600 font-bold text-base mb-3">${product.price.toFixed(2)} ر.س</div>
+                            <div class="flex gap-2">
+                                <button onclick="addToCart(${product.id})" class="flex-1 bg-green-50 text-green-600 hover:bg-green-500 hover:text-white text-xs font-bold py-2 rounded-lg transition cursor-pointer">
+                                    + إضافة
+                                </button>
+                                <button onclick="removeFromCart(${product.id})" class="bg-red-50 text-red-500 hover:bg-red-500 hover:text-white text-xs font-bold px-2 rounded-lg transition cursor-pointer" title="إلغاء قطعة">
+                                    - إلغاء
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // فلترة المنتجات حسب القسم
+        function filterProducts() {
+            const cat = document.getElementById('category-filter').value;
+            if (cat === 'all') {
+                displayProducts(products);
+            } else {
+                const filtered = products.filter(p => p.category === cat);
+                displayProducts(filtered);
+            }
+        }
+
+        // إدارة السلة (إضافة)
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const cartItem = cart.find(item => item.id === id);
+            
+            if (cartItem) {
+                cartItem.qty++;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            updateCartUI();
+        }
+
+        // إدارة السلة (إلغاء / تقليل)
+        function removeFromCart(id) {
+            const cartItem = cart.find(item => item.id === id);
+            if (cartItem) {
+                cartItem.qty--;
+                if (cartItem.qty <= 0) {
+                    cart = cart.filter(item => item.id !== id);
+                }
+            }
+            updateCartUI();
+        }
+
+        // تفريغ السلة
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+        }
+
+        // تحديث واجهة السلة
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cart-total');
+            
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">السلة فارغة حالياً</p>';
+                cartCount.innerText = '0';
+                cartTotal.innerText = '0.00 ر.س';
+                return;
+            }
+
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+            let totalQty = 0;
+
+            cart.forEach(item => {
+                let itemTotal = item.price * item.qty;
+                total += itemTotal;
+                totalQty += item.qty;
+
+                cartItemsContainer.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg text-xs">
+                        <div>
+                            <p class="font-medium text-gray-800">${item.name}</p>
+                            <p class="text-gray-400">${item.price.toFixed(2)} ر.س × ${item.qty}</p>
+                        </div>
+                        <span class="font-bold text-gray-700">${itemTotal.toFixed(2)} ر.س</span>
+                    </div>
+                `;
+            });
+
+            cartCount.innerText = totalQty;
+            cartTotal.innerText = total.toFixed(2) + ' ر.س';
+        }
+
+        // زر الشراء التماتييكي
+        function checkout() {
+            if (cart.length === 0) {
+                alert("سلتك فارغة! أضف بعض المنتجات أولاً.");
+                return;
+            }
+            let orderDetails = cart.map(item => `- ${item.name} (العدد: ${item.qty})`).join('\n');
+            let totalStr = document.getElementById('cart-total').innerText;
+            
+            alert(`🎉 تم إرسال طلبك بنجاح!\n\nتفاصيل الطلب:\n${orderDetails}\n\nالإجمالي: ${totalStr}`);
+            clearCart();
+        }
+
+        // تشغيل الصفحة تلقائياً عند الفتح
+        displayProducts(products);
+    </script>
+</body>
+</html>
