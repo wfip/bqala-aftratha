@@ -3,98 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تموينات صرح الغذاء - طلبات الزبائن</title>
-    <!-- Tailwind CSS لتصميم سريع ومرتب -->
+    <title>لوحة التحكم والطلبات - صرح الغذاء</title>
+    <!-- Tailwind CSS لتصميم لوحة تحكم عصرية ونظيفة -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
         body { font-family: 'Tajawal', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-slate-50 text-slate-800">
 
-    <!-- الهيدر والبار العلوي -->
-    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-green-600 flex items-center gap-2">
-                🛒 تموينات صرح الغذاء
-            </h1>
-            <div class="flex items-center gap-4">
-                <a href="admin.html" target="_blank" class="text-xs font-medium text-gray-400 hover:text-green-600 transition">
-                    ⚙️ لوحة الإدارة
-                </a>
-                <button onclick="toggleCart()" class="relative bg-green-500 text-white px-5 py-2 rounded-full font-bold hover:bg-green-600 transition flex items-center gap-2 cursor-pointer shadow-sm">
-                    <span>السلة</span>
-                    <span id="cart-count" class="bg-white text-green-600 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- المحتوى والتقسيم -->
-    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
-        
-        <!-- قـسـم الـمـنـتـجـات الرئيسي -->
-        <div class="w-full lg:w-3/4">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-900">قائمة المنتجات والسلع</h2>
-                    <p class="text-xs text-gray-400 mt-1">يحتوي المتجر على <span id="total-products" class="text-green-600 font-bold">200</span> منتج مصنف حسب الأقسام.</p>
-                </div>
-                <select id="category-filter" onchange="filterProducts()" class="border border-gray-200 rounded-xl p-2.5 bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
-                    <option value="all">كل الأقسام والمنتجات</option>
-                    <option value="الألبان والأجبان والبيض">الألبان والأجبان والبيض</option>
-                    <option value="المعلبات والأغذية المحفوظة">المعلبات والأغذية المحفوظة</option>
-                    <option value="المشروبات والعصائر">المشروبات والعصائر</option>
-                    <option value="المخبوزات والحلويات">المخبوزات والحلويات</option>
-                    <option value="الزيوت والبهارات والمواد الأساسية">الزيوت والبهارات والمواد الأساسية</option>
-                    <option value="المنظفات والعناية الشخصية">المنظفات والعناية الشخصية</option>
-                </select>
-            </div>
-
-            <!-- شبكة عرض المنتجات الـ 200 (بدون صور) -->
-            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- جافاسكريبت يبني السلع هنا -->
-            </div>
-        </div>
-
-        <!-- قـسـم الـسـلـة الـجـانـبـي -->
-        <div id="cart-sidebar" class="w-full lg:w-1/4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit lg:sticky lg:top-24">
-            <h3 class="text-base font-bold mb-4 flex items-center justify-between">
-                <span>سلة المشتريات 🛍️</span>
-                <button onclick="clearCart()" class="text-xs text-red-500 hover:underline font-medium cursor-pointer">حذف الكل</button>
-            </h3>
-            
-            <div id="cart-items" class="space-y-3 max-h-72 overflow-y-auto mb-4">
-                <p class="text-gray-400 text-xs text-center py-6">السلة فارغة، أضف منتجات للبدء</p>
-            </div>
-            
-            <hr class="border-gray-100 my-4">
-            
-            <div class="space-y-2 mb-6 text-sm">
-                <div class="flex justify-between text-gray-500">
-                    <span>عدد القطع:</span>
-                    <span id="cart-pieces-count">0 قطعة</span>
-                </div>
-                <div class="flex justify-between font-bold text-base text-gray-900">
-                    <span>الإجمالي النهائي:</span>
-                    <span id="cart-total" class="text-green-600">0.00 ر.س</span>
-                </div>
-            </div>
-
-            <button onclick="checkout()" class="w-full bg-green-500 text-white text-center py-3 rounded-xl font-bold hover:bg-green-600 transition shadow-md cursor-pointer text-xs">
-                تأكيد وإرسال طلب الشراء 💳
+    <!-- شاشة تسجيل الدخول المقفلة بكلمة مرور -->
+    <div id="auth-overlay" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm text-center space-y-4">
+            <div class="text-3xl">🔐</div>
+            <h2 class="text-lg font-bold text-slate-800">لوحة الإدارة المحمية</h2>
+            <p class="text-xs text-slate-400">الرجاء إدخال رمز الأمان للوصول إلى الأسعار والطلبات</p>
+            <input type="password" id="admin-password-input" placeholder="أدخل كلمة المرور هنا" class="w-full border border-slate-200 rounded-xl p-3 text-center font-bold tracking-widest text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button onclick="checkAdminAuth()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition text-sm cursor-pointer shadow-md shadow-green-100">
+                تسجيل الدخول 🔓
             </button>
+            <p id="auth-error" class="text-xs text-red-500 font-medium hidden">❌ كلمة المرور غير صحيحة، حاول مجدداً!</p>
         </div>
-    </main>
+    </div>
+
+    <!-- محتوى لوحة التحكم الرئيسي (مخفي حتى يتم إدخال الرمز الصحيح) -->
+    <div id="admin-content" class="hidden">
+        <!-- الهيدر العلوي للوحة التحكم -->
+        <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold flex items-center gap-2 text-green-400">
+                    ⚙️ لوحة إدارة الأسعار والطلبات الواردة
+                </h1>
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition border border-slate-700">
+                    👁️ عرض المتجر الرئيسي
+                </a>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-8 space-y-8">
+            
+            <!-- ================= قـسـم الـطـلـبـات الـواردة بالموقع ================= -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            📥 طلبات الشراء الواردة من المتجر والموقع
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">تظهر هنا الطلبات وقائمة السلع وموقع العميل على الخريطة مباشرة</p>
+                    </div>
+                    <button onclick="clearAllOrders()" class="text-xs text-red-500 hover:underline font-medium cursor-pointer">حذف جميع الطلبات</button>
+                </div>
+                
+                <!-- جدول أو قائمة عرض الطلبات الواردة -->
+                <div id="orders-container" class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                    <p class="text-slate-400 text-sm text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">لا توجد طلبات واردة حالياً</p>
+                </div>
+            </div>
+
+            <!-- بار البحث والتحكم السريع بالأسعار -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="w-full md:w-1/2">
+                    <label class="block text-xs font-bold text-slate-500 mb-2">البحث السريع عن منتج لتعديل سعره:</label>
+                    <input type="text" id="search-input" oninput="searchProducts()" placeholder="اكتب اسم المنتج هنا... (مثال: بيبسي، تونا، حليب)" class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div class="flex gap-3 w-full md:w-auto justify-end">
+                    <button onclick="resetAllPrices()" class="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-5 py-3 rounded-xl text-xs font-bold transition cursor-pointer">
+                        ↩️ إعادة الأسعار الافتراضية للكل
+                    </button>
+                </div>
+            </div>
+
+            <!-- جدول المنتجات الـ 200 (بدون صور) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-700 text-sm">تعديل أسعار قائمة السلع</h3>
+                    <span class="text-xs text-slate-400">عدد السلع: <span id="visible-count" class="text-green-600 font-bold">200</span></span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-xs font-bold border-b border-slate-200">
+                                <th class="p-4 w-16">رقم</th>
+                                <th class="p-4">اسم المنتج الحقيقي</th>
+                                <th class="p-4">القسم والنوع</th>
+                                <th class="p-4 w-44">السعر الحالي (ر.س)</th>
+                                <th class="p-4 w-32">حفظ التعديل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                            <!-- جافاسكريبت يقوم بتوليد الـ 200 سطر هنا -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
+        // التحقق من رمز الحماية والأمان المخصص
+        function checkAdminAuth() {
+            const passInput = document.getElementById('admin-password-input').value;
+            if (passInput === '123456789') {
+                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                // تفعيل تشغيل البيانات فوراً بعد فتح اللوحة
+                renderTable(products);
+                loadOrders();
+            } else {
+                document.getElementById('auth-error').classList.remove('hidden');
+            }
+        }
+
+        // تفعيل تسجيل الدخول عند الضغط على زر Enter بالكيبورد لتسهيل الدخول
+        document.getElementById('admin-password-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkAdminAuth();
+        });
+
         const categories = [
             "الألبان والأجبان والبيض", "المعلبات والأغذية المحفوظة", "المشروبات والعصائر", 
             "المخبوزات والحلويات", "الزيوت والبهارات والمواد الأساسية", "المنظفات والعناية الشخصية"
         ];
 
-        // مصفوفة أسماء المنتجات بدون روابط صور
         const realProductsPool = {
             "الألبان والأجبان والبيض": [
                 { name: "حليب المراعي كامل الدسم 1 لتر" }, { name: "حليب نادك قليل الدسم 1 لتر" },
@@ -129,7 +161,6 @@
         let products = [];
         let customPrices = JSON.parse(localStorage.getItem('grocery_prices')) || {};
 
-        // توليد قائمة الـ 200 منتج
         let idCounter = 1;
         while (products.length < 200) {
             for (let cat of categories) {
@@ -156,146 +187,141 @@
             }
         }
 
-        let cart = [];
+        function renderTable(items) {
+            const tbody = document.getElementById('admin-table-body');
+            tbody.innerHTML = '';
+            document.getElementById('visible-count').innerText = items.length;
 
-        function displayProducts(items) {
-            const grid = document.getElementById('products-grid');
-            grid.innerHTML = '';
-            
             items.forEach(product => {
-                grid.innerHTML += `
-                    <div class="bg-white rounded-xl p-4 border border-gray-100 hover:border-green-200 transition flex flex-col justify-between">
-                        <div>
-                            <span class="text-[10px] text-gray-500 bg-gray-100 font-bold px-2 py-0.5 rounded">${product.category}</span>
-                            <h4 class="font-bold text-sm mt-2 text-gray-800 leading-snug">${product.name}</h4>
-                        </div>
-                        <div class="mt-4 pt-2 border-t border-gray-50 flex items-center justify-between">
-                            <div class="text-green-600 font-bold text-sm">${product.price.toFixed(2)} ر.س</div>
-                            <div class="flex gap-1">
-                                <button onclick="addToCart(${product.id})" class="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-green-600 transition cursor-pointer">
-                                    + إضافة
-                                </button>
-                                <button onclick="removeFromCart(${product.id})" class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1.5 rounded-lg hover:bg-gray-200 transition cursor-pointer">
-                                    -
-                                </button>
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 text-slate-400 font-medium">${product.id}</td>
+                        <td class="p-4 font-bold text-slate-800">${product.name}</td>
+                        <td class="p-4"><span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">${product.category}</span></td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-1.5">
+                                <input type="number" id="price-input-${product.id}" step="0.01" value="${product.price.toFixed(2)}" class="w-24 border border-slate-200 rounded-lg p-1.5 text-center font-bold text-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <span class="text-xs text-slate-400">ر.س</span>
                             </div>
-                        </div>
-                    </div>
+                        </td>
+                        <td class="p-4">
+                            <button onclick="savePrice(${product.id})" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer">
+                                حفظ 💾
+                            </button>
+                        </td>
+                    </tr>
                 `;
             });
         }
 
-        function filterProducts() {
-            const cat = document.getElementById('category-filter').value;
-            if (cat === 'all') {
-                displayProducts(products);
-            } else {
-                const filtered = products.filter(p => p.category === cat);
-                displayProducts(filtered);
+        function searchProducts() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
+            renderTable(filtered);
+        }
+
+        function savePrice(id) {
+            const inputVal = document.getElementById(`price-input-${id}`).value;
+            const newPrice = parseFloat(inputVal);
+
+            if (isNaN(newPrice) || newPrice < 0) {
+                alert("الرجاء إدخال سعر صحيح.");
+                return;
+            }
+
+            customPrices[id] = newPrice;
+            localStorage.setItem('grocery_prices', JSON.stringify(customPrices));
+
+            const prod = products.find(p => p.id === id);
+            if (prod) prod.price = newPrice;
+        }
+
+        function resetAllPrices() {
+            if (confirm("هل تريد العودة للأسعار الافتراضية؟")) {
+                localStorage.removeItem('grocery_prices');
+                location.reload();
             }
         }
 
-        function addToCart(id) {
-            const product = products.find(p => p.id === id);
-            const cartItem = cart.find(item => item.id === id);
-            if (cartItem) {
-                cartItem.qty++;
-            } else {
-                cart.push({ ...product, qty: 1 });
-            }
-            updateCartUI();
-        }
+        // ================= نظام إدارة وعرض الطلبات الواردة بالموقع الجغرافي =================
+        function loadOrders() {
+            const container = document.getElementById('orders-container');
+            const orders = JSON.parse(localStorage.getItem('grocery_orders')) || [];
 
-        function removeFromCart(id) {
-            const cartItem = cart.find(item => item.id === id);
-            if (cartItem) {
-                cartItem.qty--;
-                if (cartItem.qty <= 0) {
-                    cart = cart.filter(item => item.id !== id);
+            if (orders.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 text-sm text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">لا توجد طلبات واردة حالياً</p>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            orders.reverse().forEach((order, index) => {
+                let itemsList = order.items.map(item => `
+                    <div class="flex justify-between text-xs text-slate-600 py-1 border-b border-slate-50">
+                        <span>• ${item.name} (عدد: ${item.qty})</span>
+                        <span class="font-medium">${(item.price * item.qty).toFixed(2)} ر.س</span>
+                    </div>
+                `).join('');
+
+                // فحص إذا كان العميل أرسل موقعه الجغرافي
+                let locationButtonHtml = '';
+                if (order.location && order.location.lat && order.location.lng) {
+                    const mapsUrl = `https://www.google.com/maps?q=${order.location.lat},${order.location.lng}`;
+                    locationButtonHtml = `
+                        <a href="${mapsUrl}" target="_blank" class="inline-flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-sm">
+                            📌 فتح موقع الزبون على الخريطة
+                        </a>
+                    `;
+                } else {
+                    locationButtonHtml = `<span class="text-xs text-slate-400 font-medium">📍 الموقع الجغرافي لم يرسل أو تم رفضه</span>`;
                 }
-            }
-            updateCartUI();
-        }
 
-        function clearCart() {
-            cart = [];
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const cartItemsContainer = document.getElementById('cart-items');
-            const cartCount = document.getElementById('cart-count');
-            const piecesCount = document.getElementById('cart-pieces-count');
-            const cartTotal = document.getElementById('cart-total');
-            
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p class="text-gray-400 text-xs text-center py-6">السلة فارغة، أضف منتجات للبدء</p>';
-                cartCount.innerText = '0';
-                piecesCount.innerText = '0 قطعة';
-                cartTotal.innerText = '0.00 ر.س';
-                return;
-            }
-
-            cartItemsContainer.innerHTML = '';
-            let total = 0;
-            let totalQty = 0;
-
-            cart.forEach(item => {
-                let itemTotal = item.price * item.qty;
-                total += itemTotal;
-                totalQty += item.qty;
-
-                cartItemsContainer.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg text-xs border border-gray-100">
-                        <div>
-                            <p class="font-bold text-gray-800">${item.name}</p>
-                            <p class="text-gray-400 mt-0.5">${item.price.toFixed(2)} ر.س × ${item.qty}</p>
+                container.innerHTML += `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs font-bold text-slate-400">طلب رقم #${order.id || (orders.length - index)}</span>
+                                <div class="text-xs text-slate-500 mt-0.5">التوقيت: ${order.date || 'غير محدد'}</div>
+                            </div>
+                            <span class="text-sm font-bold text-green-600 bg-white px-3 py-1.5 rounded-lg border border-slate-100">
+                                الإجمالي: ${order.total}
+                            </span>
                         </div>
-                        <span class="font-bold text-gray-700">${itemTotal.toFixed(2)} ر.س</span>
+                        <div class="bg-white p-3 rounded-lg border border-slate-100 divide-y divide-slate-100">
+                            ${itemsList}
+                        </div>
+                        <div class="flex flex-wrap justify-between items-center gap-2 pt-1 border-t border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold px-2 py-1 rounded bg-amber-50 text-amber-600 border border-amber-100">قيد الانتظار</span>
+                                ${locationButtonHtml}
+                            </div>
+                            <button onclick="deleteOrder(${index})" class="text-xs text-red-400 hover:text-red-600 transition font-medium cursor-pointer">حذف الطلب</button>
+                        </div>
                     </div>
                 `;
             });
-
-            cartCount.innerText = totalQty;
-            piecesCount.innerText = `${totalQty} قطعة`;
-            cartTotal.innerText = total.toFixed(2) + ' ر.س';
         }
 
-        // إرسال الطلب وحفظه في النظام للوحة التحكم تلقائياً
-        function checkout() {
-            if (cart.length === 0) {
-                alert("السلة فارغة حالياً! قم بإضافة المنتجات أولاً.");
-                return;
+        function deleteOrder(indexFromTop) {
+            let orders = JSON.parse(localStorage.getItem('grocery_orders')) || [];
+            orders.reverse();
+            orders.splice(indexFromTop, 1);
+            orders.reverse();
+            localStorage.setItem('grocery_orders', JSON.stringify(orders));
+            loadOrders();
+        }
+
+        function clearAllOrders() {
+            if (confirm("هل تريد مسح سجل الطلبات بالكامل؟")) {
+                localStorage.removeItem('grocery_orders');
+                loadOrders();
             }
-            
-            let existingOrders = JSON.parse(localStorage.getItem('grocery_orders')) || [];
-            
-            let newOrder = {
-                id: Math.floor(1000 + Math.random() * 9000),
-                date: new Date().toLocaleString('ar-EG'),
-                items: cart.map(item => ({ name: item.name, qty: item.qty, price: item.price })),
-                total: document.getElementById('cart-total').innerText
-            };
-            
-            existingOrders.push(newOrder);
-            localStorage.setItem('grocery_orders', JSON.stringify(existingOrders));
-            
-            alert(`🎉 تم إرسال طلبك إلى الإدارة بنجاح!\nرقم الطلب الخاص بك: #${newOrder.id}`);
-            clearCart();
         }
 
-        // مزامنة الأسعار إذا تعدلت من لوحة الإدارة وهي مفتوحة
         window.addEventListener('storage', (e) => {
-            if (e.key === 'grocery_prices') {
-                customPrices = JSON.parse(e.newValue) || {};
-                products.forEach(p => {
-                    if (customPrices[p.id]) p.price = parseFloat(customPrices[p.id]);
-                });
-                filterProducts();
+            if (e.key === 'grocery_orders') {
+                loadOrders();
             }
         });
-
-        displayProducts(products);
     </script>
 </body>
 </html>
